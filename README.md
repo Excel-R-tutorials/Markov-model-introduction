@@ -19,5 +19,4 @@ File | Description
 
 ## 👂 Feedback
 
-Please open an issue in our issue tracker at
-https://github.com/Excel-R-tutorials/Markov_Intro/issues
+Please open an issue in our [issue tracker](https://github.com/Excel-R-tutorials/Markov_Intro/issues).
