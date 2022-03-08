@@ -1,6 +1,6 @@
 # Health Economic Evaluation using Markov Models in R for Microsoft Excel Users: A Tutorial
 
-This is the repo for the journal paper _Health Economic Evaluation using Markov Models in R for Microsoft Excel Users: A Tutorial_ by 
+> This is the repo for the journal paper _Health Economic Evaluation using Markov Models in R for Microsoft Excel Users: A Tutorial_ by 
 Nathan Green, Felicity Lamrock, Nichola Naylor, Jack Williams, Andrew Briggs.
 
 ## Abstract
@@ -10,6 +10,11 @@ A health economic evaluation (HEE) is a comparative analysis of alternative cour
 
 * The main R scripts for this paper is [Markov_model_realworld.R](https://github.com/Excel-R-tutorials/Markov_Intro/blob/main/Markov_model_realworld.R)
 * The Organisation in which this is part is [here](https://github.com/Excel-R-tutorials).
+
+File | Description
+-----|------------
+Markov_model_realword | R script
+
 
 ## 👂 Feedback
 
