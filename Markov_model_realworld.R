@@ -207,6 +207,7 @@ q_incr <- total_QALYs["with_drug"] - total_QALYs["without_drug"]
 # Incremental cost effectiveness ratio 
 ICER <- c_incr/q_incr
 
+wtp <- 20000
 plot(x = q_incr/n_cohort, y = c_incr/n_cohort,
      xlim = c(0, 1100/n_cohort),
      ylim = c(0, 10e6/n_cohort),
@@ -214,7 +215,19 @@ plot(x = q_incr/n_cohort, y = c_incr/n_cohort,
      xlab = "QALY difference",
      ylab = paste0("Cost difference (", enc2utf8("\u00A3"), ")"),
      frame.plot = FALSE)
-abline(a = 0, b = 30000) # Willingness-to-pay threshold
+abline(a = 0, b = wtp) # willingness-to-pay threshold
+
+
+png("figures/ceplane_point.png", width = 4, height = 4, units = "in", res = 640)
+plot(x = q_incr/n_cohort, y = c_incr/n_cohort,
+     xlim = c(0, 1100/n_cohort),
+     ylim = c(0, 10e6/n_cohort),
+     pch = 16, cex = 1.5,
+     xlab = "QALY difference",
+     ylab = paste0("Cost difference (", enc2utf8("\u00A3"), ")"),
+     frame.plot = FALSE)
+abline(a = 0, b = wtp) # willingness-to-pay threshold
+dev.off()
 
 
 #############################################
@@ -394,9 +407,21 @@ plot(x = q_incr_psa/n_cohort, y = c_incr_psa/n_cohort,
      xlab = "QALY difference",
      ylab = paste0("Cost difference (", enc2utf8("\u00A3"), ")"),
      frame.plot = FALSE)
-abline(a = 0, b = 30000, lwd = 2) # Willingness-to-pay threshold ?30,000/QALY
-
+abline(a = 0, b = wtp, lwd = 2) # Willingness-to-pay threshold
 points(x = q_incr/n_cohort, y = c_incr/n_cohort,
-       col = "red",
-       pch = 16, cex = 1.5)
+       col = "red", pch = 16, cex = 1.5)
+
+png("figures/ceplane_psa.png", width = 4, height = 4, units = "in", res = 640)
+plot(x = q_incr_psa/n_cohort, y = c_incr_psa/n_cohort,
+     xlim = c(0, 2),
+     ylim = c(0, 15e3),
+     pch = 16, cex = 1.2,
+     col = "grey",
+     xlab = "QALY difference",
+     ylab = paste0("Cost difference (", enc2utf8("\u00A3"), ")"),
+     frame.plot = FALSE)
+abline(a = 0, b = wtp, lwd = 2) # Willingness-to-pay threshold
+points(x = q_incr/n_cohort, y = c_incr/n_cohort,
+       col = "red", pch = 16, cex = 1.5)
+dev.off()
 
