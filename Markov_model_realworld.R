@@ -10,7 +10,7 @@ n_treatments <- length(t_names)
 s_names  <- c("Asymptomatic_disease", "Progressive_disease", "Dead")
 n_states <- length(s_names)
 
-n_pop <- 1000
+n_cohort <- 1000
 
 n_cycles <- 46
 Initial_age <- 55
@@ -72,7 +72,7 @@ pop <- array(data = NA,
                              cycle = NULL,
                              treatment = t_names))
 
-pop["Asymptomatic_disease", cycle = 1, ] <- n_pop
+pop["Asymptomatic_disease", cycle = 1, ] <- n_cohort
 pop["Progressive_disease", cycle = 1, ] <- 0
 pop["Dead", cycle = 1, ] <- 0
 
@@ -207,24 +207,26 @@ q_incr <- total_QALYs["with_drug"] - total_QALYs["without_drug"]
 # Incremental cost effectiveness ratio 
 ICER <- c_incr/q_incr
 
-plot(x = q_incr/n_pop, y = c_incr/n_pop,
-     xlim = c(0, 1100/n_pop),
-     ylim = c(0, 10e6/n_pop),
+wtp <- 20000
+plot(x = q_incr/n_cohort, y = c_incr/n_cohort,
+     xlim = c(0, 1100/n_cohort),
+     ylim = c(0, 10e6/n_cohort),
      pch = 16, cex = 1.5,
      xlab = "QALY difference",
-     ylab = "Cost difference (£)",
+     ylab = paste0("Cost difference (", enc2utf8("\u00A3"), ")"),
      frame.plot = FALSE)
-abline(a = 0, b = 30000) # Willingness-to-pay threshold
+abline(a = 0, b = wtp) # willingness-to-pay threshold
 
-png("plots/simple_ceplane.png", width = 4, height = 4, units = 'in', res = 300)
-plot(x = q_incr/n_pop, y = c_incr/n_pop,
-     xlim = c(0, 1100/n_pop),
-     ylim = c(0, 10e6/n_pop),
+
+png("figures/ceplane_point.png", width = 4, height = 4, units = "in", res = 640)
+plot(x = q_incr/n_cohort, y = c_incr/n_cohort,
+     xlim = c(0, 1100/n_cohort),
+     ylim = c(0, 10e6/n_cohort),
      pch = 16, cex = 1.5,
      xlab = "QALY difference",
-     ylab = "Cost difference (£)",
+     ylab = paste0("Cost difference (", enc2utf8("\u00A3"), ")"),
      frame.plot = FALSE)
-abline(a = 0, b = 30000) # Willingness-to-pay threshold
+abline(a = 0, b = wtp) # willingness-to-pay threshold
 dev.off()
 
 
@@ -380,7 +382,7 @@ qalys <- matrix(NA, nrow = n_trials, ncol = n_treatments,
                 dimnames = list(NULL, t_names))
 
 for (i in 1:n_trials) {
-  ce_res <- ce_markov(start_pop = c(n_pop, 0, 0),
+  ce_res <- ce_markov(start_pop = c(n_cohort, 0, 0),
                       p_matrix,
                       state_c_matrix(),
                       trans_c_matrix(),
@@ -397,34 +399,31 @@ for (i in 1:n_trials) {
 c_incr_psa <- costs[, "with_drug"] - costs[, "without_drug"]
 q_incr_psa <- qalys[, "with_drug"] - qalys[, "without_drug"]
 
-plot(x = q_incr_psa/n_pop, y = c_incr_psa/n_pop,
+plot(x = q_incr_psa/n_cohort, y = c_incr_psa/n_cohort,
      xlim = c(0, 2),
      ylim = c(0, 15e3),
      pch = 16, cex = 1.2,
      col = "grey",
      xlab = "QALY difference",
-     ylab = "Cost difference (£)",
+     ylab = paste0("Cost difference (", enc2utf8("\u00A3"), ")"),
      frame.plot = FALSE)
-abline(a = 0, b = 30000, lwd = 2) # Willingness-to-pay threshold £30,000/QALY
+abline(a = 0, b = wtp, lwd = 2) # Willingness-to-pay threshold
+points(x = q_incr/n_cohort, y = c_incr/n_cohort,
+       col = "red", pch = 16, cex = 1.5)
 
-points(x = q_incr/n_pop, y = c_incr/n_pop,
-       col = "red",
-       pch = 16, cex = 1.5)
-
-png("plots/psa_ceplane2.png", width = 6, height = 6, units = 'in', res = 300)
-plot(x = q_incr_psa/n_pop, y = c_incr_psa/n_pop,
+png("figures/ceplane_psa.png", width = 4, height = 4, units = "in", res = 640)
+plot(x = q_incr_psa/n_cohort, y = c_incr_psa/n_cohort,
      xlim = c(0, 2),
      ylim = c(0, 15e3),
      pch = 16, cex = 1.2,
      col = "grey",
      xlab = "QALY difference",
-     ylab = "Cost difference (£)",
+     ylab = paste0("Cost difference (", enc2utf8("\u00A3"), ")"),
      frame.plot = FALSE)
-abline(a = 0, b = 30000, lwd = 2) # Willingness-to-pay threshold £30,000/QALY
-
-points(x = q_incr/n_pop, y = c_incr/n_pop,
-       col = "red",
-       pch = 16, cex = 1.5)
+abline(a = 0, b = wtp, lwd = 2) # Willingness-to-pay threshold
+points(x = q_incr/n_cohort, y = c_incr/n_cohort,
+       col = "red", pch = 16, cex = 1.5)
 dev.off()
+
 
 
