@@ -96,8 +96,8 @@ cycle_empty_array <-
 
 cycle_state_costs <- cycle_trans_costs <- cycle_empty_array
 cycle_costs <- cycle_QALYs <- cycle_empty_array
-LE <- LYs <- cycle_empty_array    # life-expectancy; life-years
-cycle_QALE <- cycle_empty_array   # qaly-adjusted life-years
+LE <- LYs <- cycle_empty_array    # life expectancy; life-years
+cycle_QALE <- cycle_empty_array   # quality-adjusted life expectancy
 
 total_costs <- setNames(c(NA, NA), t_names)
 total_QALYs <- setNames(c(NA, NA), t_names)
@@ -184,13 +184,17 @@ for (i in 1:n_treatments) {
   
   cycle_costs[i, ] <- cycle_state_costs[i, ] + cycle_trans_costs[i, ]
   
+  # life expectancy
   LE[i, ] <- c(1,1,0) %*% pop[, , treatment = i]
   
+  # life-years
   LYs[i, ] <- LE[i, ] * 1/(1 + oDr)^(1:n_cycles - 1)
   
+  # quality-adjusted life expectancy
   cycle_QALE[i, ] <-
     state_q_matrix[treatment = i, ] %*% pop[, , treatment = i]
   
+  # quality-adjusted life-years
   cycle_QALYs[i, ] <- cycle_QALE[i, ] * 1/(1 + oDr)^(1:n_cycles - 1)
   
   total_costs[i] <- sum(cycle_costs[treatment = i, -1])
@@ -204,7 +208,7 @@ for (i in 1:n_treatments) {
 c_incr <- total_costs["with_drug"] - total_costs["without_drug"]
 q_incr <- total_QALYs["with_drug"] - total_QALYs["without_drug"]
 
-# Incremental cost effectiveness ratio 
+# Incremental cost-effectiveness ratio
 ICER <- c_incr/q_incr
 
 wtp <- 20000
@@ -269,8 +273,8 @@ ce_markov <- function(start_pop,
   
   cycle_state_costs <- cycle_trans_costs <- cycle_empty_array
   cycle_costs <- cycle_QALYs <- cycle_empty_array
-  LE <- LYs <- cycle_empty_array    # life-expectancy; life-years
-  cycle_QALE <- cycle_empty_array   # qaly-adjusted life-years
+  LE <- LYs <- cycle_empty_array    # life expectancy; life-years
+  cycle_QALE <- cycle_empty_array   # quality-adjusted life expectancy
   
   total_costs <- setNames(rep(NA, n_treat), t_names)
   total_QALYs <- setNames(rep(NA, n_treat), t_names)
