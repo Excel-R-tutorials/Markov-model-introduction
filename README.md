@@ -14,7 +14,7 @@ A health economic evaluation (HEE) is a comparative analysis of alternative cour
 File | Description
 -----|------------
 Markov_model_realword.R | R script
-Media_343196_smxx_v2.xlsm | Excel model
+Markov_model_realword.xlsm | Excel model
 
 
 ## 👂 Feedback

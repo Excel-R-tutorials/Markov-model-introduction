@@ -212,9 +212,20 @@ plot(x = q_incr/n_pop, y = c_incr/n_pop,
      ylim = c(0, 10e6/n_pop),
      pch = 16, cex = 1.5,
      xlab = "QALY difference",
-     ylab = "Cost difference (�)",
+     ylab = "Cost difference (£)",
      frame.plot = FALSE)
 abline(a = 0, b = 30000) # Willingness-to-pay threshold
+
+png("plots/simple_ceplane.png", width = 4, height = 4, units = 'in', res = 300)
+plot(x = q_incr/n_pop, y = c_incr/n_pop,
+     xlim = c(0, 1100/n_pop),
+     ylim = c(0, 10e6/n_pop),
+     pch = 16, cex = 1.5,
+     xlab = "QALY difference",
+     ylab = "Cost difference (£)",
+     frame.plot = FALSE)
+abline(a = 0, b = 30000) # Willingness-to-pay threshold
+dev.off()
 
 
 #############################################
@@ -392,11 +403,28 @@ plot(x = q_incr_psa/n_pop, y = c_incr_psa/n_pop,
      pch = 16, cex = 1.2,
      col = "grey",
      xlab = "QALY difference",
-     ylab = "Cost difference (�)",
+     ylab = "Cost difference (£)",
      frame.plot = FALSE)
-abline(a = 0, b = 30000, lwd = 2) # Willingness-to-pay threshold �30,000/QALY
+abline(a = 0, b = 30000, lwd = 2) # Willingness-to-pay threshold £30,000/QALY
 
 points(x = q_incr/n_pop, y = c_incr/n_pop,
        col = "red",
        pch = 16, cex = 1.5)
+
+png("plots/psa_ceplane2.png", width = 6, height = 6, units = 'in', res = 300)
+plot(x = q_incr_psa/n_pop, y = c_incr_psa/n_pop,
+     xlim = c(0, 2),
+     ylim = c(0, 15e3),
+     pch = 16, cex = 1.2,
+     col = "grey",
+     xlab = "QALY difference",
+     ylab = "Cost difference (£)",
+     frame.plot = FALSE)
+abline(a = 0, b = 30000, lwd = 2) # Willingness-to-pay threshold £30,000/QALY
+
+points(x = q_incr/n_pop, y = c_incr/n_pop,
+       col = "red",
+       pch = 16, cex = 1.5)
+dev.off()
+
 

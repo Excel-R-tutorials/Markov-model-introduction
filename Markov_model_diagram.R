@@ -17,3 +17,13 @@ a_graph <-
 
 render_graph(a_graph, layout = "nicely")
 render_graph(a_graph, layout = "circle")
+
+
+# library(DiagrammeRsvg)
+export_graph(graph = a_graph,
+             file_name = "markov_model_diagram.png",
+             file_type = "PNG")
+
+
+
+
