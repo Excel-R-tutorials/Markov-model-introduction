@@ -35,3 +35,4 @@ output_tab <-
     c("No drug", 7.76, format(9265, big.mark=","), "" , "", ""),
     c("Drug", 8.62, format(16155, big.mark=","), 0.87, 6891, format(7931, big.mark=",")))
   
+write.csv(output_tab, file = "output_tab.csv")
