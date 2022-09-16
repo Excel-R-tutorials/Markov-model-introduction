@@ -109,7 +109,6 @@ p_matrix_cycle <- function(p_matrix, age, cycle,
                            tpProg = 0.01,
                            tpDcm = 0.15,
                            effect = 0.5) {
-  
   tpDn_lookup <-
     c("(34,44]" = 0.0017,
       "(44,54]" = 0.0044,
@@ -119,36 +118,23 @@ p_matrix_cycle <- function(p_matrix, age, cycle,
       "(84,100]" = 0.1958)
   
   age_grp <- cut(age, breaks = c(34,44,54,64,74,84,100))
-  
   tpDn <- tpDn_lookup[age_grp]
   
   # Matrix containing transition probabilities for without_drug
-  
   p_matrix["Asymptomatic_disease", "Progressive_disease", "without_drug"] <- tpProg*cycle
-  
   p_matrix["Asymptomatic_disease", "Dead", "without_drug"] <- tpDn
-  
   p_matrix["Asymptomatic_disease", "Asymptomatic_disease", "without_drug"] <- 1 - tpProg*cycle - tpDn
-  
   p_matrix["Progressive_disease", "Dead", "without_drug"] <- tpDcm + tpDn
-  
   p_matrix["Progressive_disease", "Progressive_disease", "without_drug"] <- 1 - tpDcm - tpDn
-  
   p_matrix["Dead", "Dead", "without_drug"] <- 1
   
   # Matrix containing transition probabilities for with_drug
-  
   p_matrix["Asymptomatic_disease", "Progressive_disease", "with_drug"] <- tpProg*(1 - effect)*cycle
-  
   p_matrix["Asymptomatic_disease", "Dead", "with_drug"] <- tpDn
-  
   p_matrix["Asymptomatic_disease", "Asymptomatic_disease", "with_drug"] <-
     1 - tpProg*(1 - effect)*cycle - tpDn
-  
   p_matrix["Progressive_disease", "Dead", "with_drug"] <- tpDcm + tpDn
-  
   p_matrix["Progressive_disease", "Progressive_disease", "with_drug"] <- 1 - tpDcm - tpDn
-  
   p_matrix["Dead", "Dead", "with_drug"] <- 1
   
   return(p_matrix)
@@ -213,8 +199,8 @@ ICER <- c_incr/q_incr
 
 wtp <- 20000
 plot(x = q_incr/n_cohort, y = c_incr/n_cohort,
-     xlim = c(0, 1100/n_cohort),
-     ylim = c(0, 10e6/n_cohort),
+     xlim = c(0, 2),
+     ylim = c(0, 15e3),
      pch = 16, cex = 1.5,
      xlab = "QALY difference",
      ylab = paste0("Cost difference (", enc2utf8("\u00A3"), ")"),
@@ -224,14 +210,96 @@ abline(a = 0, b = wtp) # willingness-to-pay threshold
 
 png("figures/ceplane_point.png", width = 4, height = 4, units = "in", res = 640)
 plot(x = q_incr/n_cohort, y = c_incr/n_cohort,
-     xlim = c(0, 1100/n_cohort),
-     ylim = c(0, 10e6/n_cohort),
+     xlim = c(0, 2),
+     ylim = c(0, 15e3),
      pch = 16, cex = 1.5,
      xlab = "QALY difference",
      ylab = paste0("Cost difference (", enc2utf8("\u00A3"), ")"),
      frame.plot = FALSE)
 abline(a = 0, b = wtp) # willingness-to-pay threshold
 dev.off()
+
+
+
+###########################################
+# replace with sim_pop()
+
+# simulate state populations
+sim_pop <- function(n_cycles, age,
+                    trans_c_matrix,
+                    p_matrix, pop, trans, i) {
+  
+  for (j in 2:n_cycles) {
+    p_matrix <- p_matrix_cycle(p_matrix, age, j - 1)
+    pop[, cycle = j, i] <-
+      pop[, cycle = j - 1, i] %*% p_matrix[, , i]
+    trans[, cycle = j, i] <-
+      pop[, cycle = j - 1, i] %*% (trans_c_matrix * p_matrix[, , i])
+    age <- age + 1
+  }
+  
+  list(pop = pop[, , i],
+       trans = trans[, , i])
+}
+
+
+for (i in 1:n_treatments) {
+  
+  # simulate state populations
+  sim_res <-
+    sim_pop(n_cycles, Initial_age,
+            trans_c_matrix,
+            p_matrix, pop, trans, i)
+  
+  trans[, , i] <- sim_res$trans
+  pop[, , i] <- sim_res$pop
+  
+  cycle_state_costs[i, ] <-
+    (state_c_matrix[treatment = i, ] %*% pop[, , treatment = i]) * 1/(1 + cDr)^(1:n_cycles - 1)
+  
+  # discounting at _previous_ cycle
+  cycle_trans_costs[i, ] <-
+    (c(1,1,1) %*% trans[, , treatment = i]) * 1/(1 + cDr)^(1:n_cycles - 2)
+  
+  cycle_costs[i, ] <- cycle_state_costs[i, ] + cycle_trans_costs[i, ]
+  
+  # life expectancy
+  LE[i, ] <- c(1,1,0) %*% pop[, , treatment = i]
+  
+  # life-years
+  LYs[i, ] <- LE[i, ] * 1/(1 + oDr)^(1:n_cycles - 1)
+  
+  # quality-adjusted life expectancy
+  cycle_QALE[i, ] <-
+    state_q_matrix[treatment = i, ] %*% pop[, , treatment = i]
+  
+  # quality-adjusted life-years
+  cycle_QALYs[i, ] <- cycle_QALE[i, ] * 1/(1 + oDr)^(1:n_cycles - 1)
+  
+  total_costs[i] <- sum(cycle_costs[treatment = i, -1])
+  total_QALYs[i] <- sum(cycle_QALYs[treatment = i, -1])
+}
+
+
+## Plot results ----
+
+# Incremental costs and QALYs of with_drug vs to without_drug
+c_incr <- total_costs["with_drug"] - total_costs["without_drug"]
+q_incr <- total_QALYs["with_drug"] - total_QALYs["without_drug"]
+
+# Incremental cost-effectiveness ratio
+ICER <- c_incr/q_incr
+
+wtp <- 20000
+plot(x = q_incr/n_cohort, y = c_incr/n_cohort,
+     xlim = c(0, 2),
+     ylim = c(0, 15e3),
+     pch = 16, cex = 1.5,
+     xlab = "QALY difference",
+     ylab = paste0("Cost difference (", enc2utf8("\u00A3"), ")"),
+     frame.plot = FALSE)
+abline(a = 0, b = wtp) # willingness-to-pay threshold
+
 
 
 #############################################
