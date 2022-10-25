@@ -26,6 +26,9 @@ uProg <- 0.75
 oDr <- 0.06
 cDr <- 0.06
 tpDcm <- 0.15
+tpProg <- 0.01
+tpDn <- 0.0379  # over 65 year old
+effect <- 0.5
 
 # cost of staying in state
 state_c_matrix <-
@@ -58,8 +61,13 @@ trans_c_matrix <-
 
 # Transition probabilities ---- 
 
-# Transition probabilities
-p_matrix <- array(data = 0,
+# time-homogeneous
+p_matrix <- array(data = c(1 - tpProg - tpDn, 0, 0,
+                           tpProg, 1 - tpDcm - tpDn, 0,
+                           tpDn, tpDcm + tpDn, 1,
+                           1 - tpProg*(1-effect) - tpDn, 0, 0,
+                           tpProg*(1-effect), 1 - tpDcm - tpDn, 0,
+                           tpDn, tpDcm + tpDn, 1),
                   dim = c(n_states, n_states, n_treatments),
                   dimnames = list(from = s_names,
                                   to = s_names,

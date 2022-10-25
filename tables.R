@@ -1,4 +1,5 @@
 
+#
 input_tab <- 
   tibble::tribble(
     ~Name, ~Value, ~Description,
@@ -24,3 +25,14 @@ input_tab <-
   )
 
 write.csv(input_tab, file = "input_tab.csv")
+
+
+#
+output_tab <-
+  rbind(
+    c("Strategy", "Eff", paste0("Cost (", enc2utf8("\u00A3"),")"), paste0(enc2utf8("\u0394"), "Eff"),
+      paste0(enc2utf8("\u0394"), "Cost (", enc2utf8("\u00A3"), ")"),  "ICER"),
+    c("No drug", 7.76, format(9265, big.mark=","), "" , "", ""),
+    c("Drug", 8.62, format(16155, big.mark=","), 0.87, 6891, format(7931, big.mark=",")))
+  
+write.csv(output_tab, file = "output_tab.csv")
