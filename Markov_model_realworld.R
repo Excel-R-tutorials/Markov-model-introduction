@@ -11,9 +11,11 @@ s_names  <- c("Asymptomatic_disease", "Progressive_disease", "Dead")
 n_states <- length(s_names)
 
 n_cohort <- 1000
+cycle <- 1
 
 n_cycles <- 46
 Initial_age <- 55
+effect <- 0.5
 
 cAsymp <- 500
 cDeath <- 1000
