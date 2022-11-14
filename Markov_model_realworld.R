@@ -1,7 +1,7 @@
 ############################
 # Markov model: real world #
 ############################
-
+rm(list = ls())
 ## model set-up ----
 
 t_names <- c("without_drug", "with_drug")
@@ -29,6 +29,27 @@ tpDcm <- 0.15
 tpProg <- 0.01
 tpDn <- 0.0379  # over 65 year old
 effect <- 0.5
+
+# lookup values for age specific other cause mortality.
+# create a lookup 
+tpDn_byage <- sapply(
+  X = 1:100,
+  FUN = function(x, age_breaks, tpDn_lookup) {
+    temp <- cut(x = x, breaks = age_breaks)
+    setNames(object = tpDn_lookup[temp],
+             nm = x)
+  },
+  age_breaks = c(34, 44, 54, 64, 74, 84, 100),
+  tpDn_lookup = c(
+    "(34,44]" = 0.0017,
+    "(44,54]" = 0.0044,
+    "(54,64]" = 0.0138,
+    "(64,74]" = 0.0379,
+    "(74,84]" = 0.0912,
+    "(84,100]" = 0.1958
+  )
+)
+
 
 # cost of staying in state
 state_c_matrix <-
@@ -115,20 +136,14 @@ total_QALYs <- setNames(c(NA, NA), t_names)
 
 # Time-dependent probability matrix ----
 
-p_matrix_cycle <- function(p_matrix, age, cycle,
+p_matrix_cycle <- function(p_matrix, 
+                           age, 
+                           cycle,
+                           tpDn_byage,
                            tpProg = 0.01,
                            tpDcm = 0.15,
                            effect = 0.5) {
-  tpDn_lookup <-
-    c("(34,44]" = 0.0017,
-      "(44,54]" = 0.0044,
-      "(54,64]" = 0.0138,
-      "(64,74]" = 0.0379,
-      "(74,84]" = 0.0912,
-      "(84,100]" = 0.1958)
-  
-  age_grp <- cut(age, breaks = c(34,44,54,64,74,84,100))
-  tpDn <- tpDn_lookup[age_grp]
+  tpDn <- tpDn_byage[age]
   
   # Matrix containing transition probabilities for without_drug
   p_matrix["Asymptomatic_disease", "Progressive_disease", "without_drug"] <- tpProg*cycle
@@ -160,7 +175,13 @@ for (i in 1:n_treatments) {
   
   for (j in 2:n_cycles) {
     
-    p_matrix <- p_matrix_cycle(p_matrix, age, j - 1)
+    p_matrix <- p_matrix_cycle(p_matrix = p_matrix,
+                               age =  age,
+                               tpDn_byage = tpDn_byage,
+                               cycle =  j - 1,
+                               tpProg = tpProg,
+                               tpDcm = tpDcm,
+                               effect = effect)
     
     pop[, cycle = j, treatment = i] <-
       pop[, cycle = j - 1, treatment = i] %*% p_matrix[, , treatment = i]
@@ -240,7 +261,13 @@ sim_pop <- function(n_cycles, age,
                     p_matrix, pop, trans, i) {
   
   for (j in 2:n_cycles) {
-    p_matrix <- p_matrix_cycle(p_matrix, age, j - 1)
+    p_matrix <- p_matrix_cycle(p_matrix = p_matrix,
+                               age =  age,
+                               cycle =  j - 1,
+                               tpDn_byage = tpDn_byage,
+                               tpProg = tpProg,
+                               tpDcm = tpDcm, 
+                               effect = effect)
     pop[, cycle = j, i] <-
       pop[, cycle = j - 1, i] %*% p_matrix[, , i]
     trans[, cycle = j, i] <-
@@ -366,7 +393,10 @@ ce_markov <- function(start_pop,
       # difference from point estimate case
       # pass in functions for random sample
       # rather than fixed values
-      p_matrix <- p_matrix_cycle(p_matrix, age, j - 1,
+      p_matrix <- p_matrix_cycle(p_matrix = p_matrix, 
+                                 age = age, 
+                                 cycle = j - 1,
+                                 tpDn_byage = tpDn_byage,
                                  tpProg = tpProg(),
                                  tpDcm = tpDcm(),
                                  effect = effect())
